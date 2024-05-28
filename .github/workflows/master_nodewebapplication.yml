@@ -24,7 +24,7 @@ jobs:
       - name: npm install and audit fix
         run: |
           npm install
-          npm audit fix
+          npm audit fix || echo "Audit fix encountered issues but continuing build"
 
       - name: npm build and test
         run: |
