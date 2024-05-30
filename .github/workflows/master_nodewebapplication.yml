@@ -61,11 +61,23 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2E9D76463E95400888F33090266AD5E9 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3EC073DAC5004260A1C148B67CC37181 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0C5E9402499542078F2A58B9AA39E592 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Set environment variables from env file
+        run: |
+          while IFS= read -r line; do
+            if [[ ! "$line" =~ ^# && -n "$line" ]]; then
+              IFS='=' read -ra KV <<< "$line"
+              az webapp config appsettings set --name 'NodeWebApplication' --resource-group '<Your-Resource-Group-Name>' --settings "${KV[0]}=${KV[1]}"
+            fi
+          done < env
+        env:
+          AZURE_WEBAPP_NAME: 'NodeWebApplication'
+          AZURE_RESOURCE_GROUP: '<Your-Resource-Group-Name>'
+
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
